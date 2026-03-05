@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Validity & Reliability Simulation</title>
+
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#f5f5f5;
+}
+
+canvas{
+background:white;
+border:2px solid #333;
+}
+
+.controls{
+margin:15px;
+}
+
+button, select{
+font-size:16px;
+padding:6px 10px;
+margin:3px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Validity & Reliability Dart Simulation</h2>
+
+<div class="controls">
+
+Validity
+<select id="validity">
+<option value="high">High</option>
+<option value="low">Low</option>
+</select>
+
+Reliability
+<select id="reliability">
+<option value="low">Low</option>
+<option value="high">High</option>
+</select>
+
+<br><br>
+
+<button onclick="throwDart()">Throw Once</button>
+<button onclick="runExperiment()">Run Experiment (30 throws)</button>
+<button onclick="resetBoard()">Reset</button>
+
+</div>
+
+<canvas id="board" width="500" height="500"></canvas>
+
+<p>
+Observe the cluster of darts and the green crosshair (mean position).<br>
+How does the pattern represent validity and reliability?
+</p>
+
+<script>
+
+const canvas = document.getElementById("board")
+const ctx = canvas.getContext("2d")
+
+const centerX = canvas.width/2
+const centerY = canvas.height/2
+
+let darts = []
+
+function drawBoard(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+let rings=[200,150,100,50,10]
+
+for(let r of rings){
+
+ctx.beginPath()
+ctx.arc(centerX,centerY,r,0,Math.PI*2)
+ctx.strokeStyle="#444"
+ctx.lineWidth=2
+ctx.stroke()
+
+}
+
+ctx.beginPath()
+ctx.arc(centerX,centerY,10,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+drawDarts()
+drawMean()
+
+}
+
+function drawDarts(){
+
+for(let d of darts){
+
+ctx.beginPath()
+ctx.arc(d.x,d.y,4,0,Math.PI*2)
+ctx.fillStyle="blue"
+ctx.fill()
+
+}
+
+}
+
+function drawMean(){
+
+if(darts.length===0) return
+
+let sumX=0
+let sumY=0
+
+for(let d of darts){
+
+sumX+=d.x
+sumY+=d.y
+
+}
+
+let meanX=sumX/darts.length
+let meanY=sumY/darts.length
+
+ctx.strokeStyle="green"
+ctx.lineWidth=3
+
+ctx.beginPath()
+ctx.moveTo(meanX-10,meanY)
+ctx.lineTo(meanX+10,meanY)
+ctx.stroke()
+
+ctx.beginPath()
+ctx.moveTo(meanX,meanY-10)
+ctx.lineTo(meanX,meanY+10)
+ctx.stroke()
+
+}
+
+function throwDart(){
+
+let validity=document.getElementById("validity").value
+let reliability=document.getElementById("reliability").value
+
+let biasX=0
+let biasY=0
+
+if(validity==="low"){
+
+biasX=80
+biasY=-60
+
+}
+
+let spread
+
+if(reliability==="high"){
+
+spread=20
+
+}else{
+
+spread=80
+
+}
+
+let x=centerX+biasX+randomNormal()*spread
+let y=centerY+biasY+randomNormal()*spread
+
+darts.push({x,y})
+
+drawBoard()
+
+}
+
+function runExperiment(){
+
+let throws=30
+let i=0
+
+let interval=setInterval(()=>{
+
+throwDart()
+
+i++
+
+if(i>=throws) clearInterval(interval)
+
+},120)
+
+}
+
+function resetBoard(){
+
+darts=[]
+drawBoard()
+
+}
+
+function randomNormal(){
+
+let u=0
+let v=0
+
+while(u===0) u=Math.random()
+while(v===0) v=Math.random()
+
+return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)
+
+}
+
+drawBoard()
+
+</script>
+
+</body>
+</html>
